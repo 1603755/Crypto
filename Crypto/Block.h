@@ -32,7 +32,7 @@ public:
 	Block(uint32_t h, uint32_t nonc, uint256_t prev, uint256_t hashMerkle, vector<Transaction> vtx, time_t time);
 	void mine(uint8_t diff);
 	bool verifyHash(string hash, uint8_t diff);
-
+	
 	vector<Transaction> getTX() { return tx; }
 	//no serveix crec
 	bool operator ==(Block b) { return(height == b.height && nonce == b.nonce && sha256::toString(hash.bits) == sha256::toString(b.hash.bits) && sha256::toString(prevHash.bits) == sha256::toString(b.prevHash.bits) && sha256::toString(hashMerkleRoot.bits) == sha256::toString(b.hashMerkleRoot.bits)); }

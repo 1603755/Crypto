@@ -143,7 +143,6 @@
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="Coin.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ripemd160.cpp" />
     <ClCompile Include="sha256.cpp" />
     <ClCompile Include="Transaction.cpp" />
     <ClCompile Include="Utils.cpp" />

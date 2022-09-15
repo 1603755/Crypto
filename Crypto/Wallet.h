@@ -16,8 +16,8 @@ public:
 	void genKeyPair();
 
 private:
-	char* walletPrivateKey;
-	char* walletPublicKey;
+
+	unsigned char* walletPublicKey;
 };
 
 Wallet::Wallet()

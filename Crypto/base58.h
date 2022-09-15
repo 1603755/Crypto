@@ -35,6 +35,6 @@ using CodecMapping = struct _codecmapping
 
 class base58 {
 public:
-    std::string Base58Encode(const std::vector<uint8_t>& data, CodecMapping mapping);
-    std::vector<uint8_t> Base58Decode(const std::string& data, CodecMapping mapping);
+    static std::string Base58Encode(const std::vector<uint8_t>& data, CodecMapping mapping);
+    static std::vector<uint8_t> Base58Decode(const std::string& data, CodecMapping mapping);
 };

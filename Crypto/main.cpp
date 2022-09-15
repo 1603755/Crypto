@@ -2,6 +2,7 @@
 #include "Coin.h"
 int main()
 {
+ /*
     auto keypair = Utils::GetKeyRSApair();
 
     unsigned char str[] = "I am encrypted4332048230948-2308402934702384-2384092384-0234-20384-2384-2384-234^&*(&(*&(*&9798";
@@ -23,12 +24,25 @@ int main()
         printf("%c", c);
 
     printf(":End\n");
-
     free(encrypted_key);
     EVP_PKEY_free(keypair.first); EVP_PKEY_free(keypair.second);
-
-
-    Utils::generate_key();
     
+    Utils::generate_key();
+
+    EVP_PKEY* pkey = Utils::getPublicKey();
+    cout << "Address: " << Utils::getAddressFromPublicKey(keypair.first);
+    EVP_PKEY_free(pkey);
+
+    
+    */
+
+    
+
+    Utils::Keys();
+    cout <<"Bitcoin Address: " << Utils::getAddressFromPublicKey(Utils::getPublicKey()) << endl;
+    uint256_t a;
+    for (int i = 0; i < 32; i++)
+        a.bits[i] = 1;
+    Transaction tx(a, a, 10, 10);
     return 0;
 }

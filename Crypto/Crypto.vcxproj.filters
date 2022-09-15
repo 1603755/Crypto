@@ -30,9 +30,6 @@
     <ClCompile Include="Transaction.cpp">
       <Filter>Archivos de recursos</Filter>
     </ClCompile>
-    <ClCompile Include="ripemd160.cpp">
-      <Filter>Archivos de recursos\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="base64.cpp">
       <Filter>Archivos de recursos\Utils</Filter>
     </ClCompile>

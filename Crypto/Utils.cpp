@@ -1,206 +1,165 @@
 //https://wiki.openssl.org/index.php/EVP_Asymmetric_Encryption_and_Decryption_of_an_Envelope
 #include "Utils.h"
-
+#include "base58.h"
 using namespace std;
+using std::cout; using std::cin;
+using std::endl; using std::string;
 
-//will return rublic key and private key, consumer must call EVP_PKEY_free to free after use
-pair<EVP_PKEY*, EVP_PKEY*> Utils::GetKeyRSApair()
-{
-    BIGNUM* bne = BN_new();         //refer to https://www.openssl.org/docs/man1.0.2/man3/bn.html
-    BN_set_word(bne, RSA_F4);
+string Utils::getAddressFromPublicKey(string PK) {
+    //This generates our address from our Public Key
+    unsigned char* in = new unsigned char[65];
+    for (uint8_t i = 0; i < 65; i++) {
+        in[i] = PK[i];
+    }
+    //First we do SHA_256 hash to our publickey, then we generate another one using RIPEMD160, resulting as 20 bytes of hash, finally we add one extra byte cause we are on Mainnet.
+    uint8_t rmd[RIPEMD160_DIGEST_LENGTH + 1];
+    RIPEMD160(SHA256(in, 65, 0), 21, rmd+1);
+    rmd[0] = 0x00;
 
-    int bits = 2048;
-    RSA* r = RSA_new();
-    RSA_generate_key_ex(r, bits, bne, NULL);  //here we generate the RSA keys
+    //Here we need to generate a checksum to validate the integity of our address
+    unsigned char checksum[32];
+    SHA256(SHA256(rmd, 21, 0), SHA256_DIGEST_LENGTH, checksum);
 
-    //we use a memory BIO to store the keys
-    BIO* bp_public = BIO_new(BIO_s_mem()); PEM_write_bio_RSAPublicKey(bp_public, r);
-    BIO* bp_private = BIO_new(BIO_s_mem()); PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL);
+    //We add the checksum at the end of the 21 bytes hash that we generated previously.
+    vector<unsigned char> aux;
+    for (uint8_t i = 0; i < RIPEMD160_DIGEST_LENGTH + 1; i++) {
+        aux.push_back(rmd[i]);
+    }
+    for (uint8_t i = RIPEMD160_DIGEST_LENGTH + 1; i < RIPEMD160_DIGEST_LENGTH + 1 + 4; i++) {
+        aux.push_back(checksum[i - RIPEMD160_DIGEST_LENGTH + 1]);
+    }
 
-    size_t pri_len = BIO_pending(bp_private);  //once the data is written to a memory/file BIO , we get the size
-    size_t pub_len = BIO_pending(bp_public);
-    char* pri_key = (char*)malloc(pri_len + 1);
-    char* pub_key = (char*)malloc(pub_len + 1);
+    //Encode to base 58
+    CodecMapping mapping(AlphaMap, Base58Map);
+    string encoded_data;
+    encoded_data = base58::Base58Encode(aux, mapping);
+    uint8_t i = 0;
+    while (encoded_data[i] == '1') {
+        i++;
+    }
+    i--;
 
-    BIO_read(bp_private, pri_key, pri_len);   //now we read the BIO into a buffer
-    BIO_read(bp_public, pub_key, pub_len);
-
-    pri_key[pri_len] = '\0';
-    pub_key[pub_len] = '\0';
-
-    //printf("\n%s\n:\n%s\n", pri_key, pub_key);fflush(stdout);  //now we print the keys to stdout (DO NOT PRINT private key in production code, this has to be a secret)
-
-    BIO* pbkeybio = NULL;
-    pbkeybio = BIO_new_mem_buf((void*)pub_key, pub_len);  //we create a buffer BIO (this is different from the memory BIO created earlier)
-    BIO* prkeybio = NULL;
-    prkeybio = BIO_new_mem_buf((void*)pri_key, pri_len);
-
-    RSA* pb_rsa = NULL;
-    RSA* p_rsa = NULL;
-
-    pb_rsa = PEM_read_bio_RSAPublicKey(pbkeybio, &pb_rsa, NULL, NULL);  //now we read the BIO to get the RSA key
-    p_rsa = PEM_read_bio_RSAPrivateKey(prkeybio, &p_rsa, NULL, NULL);
-
-    EVP_PKEY* evp_pbkey = EVP_PKEY_new();  //we want EVP keys , openssl libraries work best with this type, https://wiki.openssl.org/index.php/EVP
-    EVP_PKEY_assign_RSA(evp_pbkey, pb_rsa);
-
-    EVP_PKEY* evp_prkey = EVP_PKEY_new();
-    EVP_PKEY_assign_RSA(evp_prkey, p_rsa);
-
-    //clean up
-    free(pri_key); free(pub_key);
-    BIO_free_all(bp_public); BIO_free_all(bp_private);
-    BIO_free(pbkeybio); BIO_free(prkeybio);
-    BN_free(bne);
-    RSA_free(r);
-  
-    return { evp_pbkey,evp_prkey };
+    //Abracadabra here we got our Address
+    string address = encoded_data.substr(i, encoded_data.length());
+    return address;
 }
 
-//Let's encrypt
-vector<unsigned char> Utils::envelope_seal(EVP_PKEY** pub_key, unsigned char* plaintext, int plaintext_len,
-    unsigned char** encrypted_key, int* encrypted_key_len, unsigned char* iv)
-{
-    EVP_CIPHER_CTX* ctx;
-    int ciphertext_len;
-    int len;
+std::string Utils::getPublicKey() {
+    //Load our public key from .pem file
+    EC_KEY* key_pair_obj = nullptr;
+    FILE* file = fopen("public.pem", "rt");
+    PEM_read_EC_PUBKEY(file, &key_pair_obj, NULL, NULL);
 
-    /* Create and initialise the context */
-    ctx = EVP_CIPHER_CTX_new();
+    char* pub_key_char;
+    EC_POINT* pub_key;
+    EC_GROUP* secp256k1_group;
 
-    /* Initialise the envelope seal operation. This operation generates
-     * a key for the provided cipher, and then encrypts that key a number
-     * of times (one for each public key provided in the pub_key array). In
-     * this example the array size is just one. This operation also
-     * generates an IV and places it in iv. */
-    EVP_SealInit(ctx, EVP_aes_256_cbc(), encrypted_key, encrypted_key_len, iv, pub_key, 1);
+    pub_key = (EC_POINT*)EC_KEY_get0_public_key(key_pair_obj);
+    secp256k1_group = EC_GROUP_new_by_curve_name(NID_secp256k1);
+    pub_key_char = EC_POINT_point2hex(secp256k1_group, pub_key, POINT_CONVERSION_UNCOMPRESSED, nullptr);
 
-
-    int blocksize = EVP_CIPHER_CTX_block_size(ctx);
-    /* Provide the message to be encrypted, and obtain the encrypted output.
-     * EVP_SealUpdate can be called multiple times if necessary
-     */
-    vector<unsigned char> cyphered(plaintext_len + blocksize - 1);
-    len = cyphered.size();
-    EVP_SealUpdate(ctx, &cyphered[0], &len, plaintext, plaintext_len);  //https://www.openssl.org/docs/man1.1.1/man3/EVP_EncryptInit.html
-    //The amount of data written depends on the block alignment of the encrypted data. For most ciphers and modes, the amount of data written can be anything from zero bytes to (inl + cipher_block_size - 1) bytes.
-
-    ciphertext_len = len;
-
-    /* Finalise the encryption. Further ciphertext bytes may be written at
-     * this stage.
-     */
-    EVP_SealFinal(ctx, &cyphered[0] + len, &len);
-    ciphertext_len += len;
-
-    /* Clean up */
-    EVP_CIPHER_CTX_free(ctx);
-    cyphered.resize(ciphertext_len);
-    return cyphered;
+    return pub_key_char;
 }
 
-vector<unsigned char> Utils::envelope_open(EVP_PKEY* priv_key, unsigned char* ciphertext, int ciphertext_len, unsigned char* encrypted_key, int encrypted_key_len, unsigned char* iv)
+void Utils::Keys()
 {
-    EVP_CIPHER_CTX* ctx;
-    int len;
-    int plaintext_len;
+    //Generates our private and public keys
+    EC_KEY* key_pair_obj = nullptr;;
+    BIGNUM* priv_key;
+    EC_POINT* pub_key;
+    EC_GROUP* secp256k1_group;
 
-    /* Create and initialise the context */
-    ctx = EVP_CIPHER_CTX_new();
+    char* pub_key_char;
+    char* priv_key_char;
 
-    /* Initialise the decryption operation. The asymmetric private key is
-     * provided and priv_key, whilst the encrypted session key is held in
-     * encrypted_key */
-    EVP_OpenInit(ctx, EVP_aes_256_cbc(), encrypted_key, encrypted_key_len, iv, priv_key);
+    int ret_error;
 
-    vector<unsigned char> plaintext(ciphertext_len);
-    /* Provide the message to be decrypted, and obtain the plaintext output.
-     * EVP_OpenUpdate can be called multiple times if necessary
-     */
-    EVP_OpenUpdate(ctx, &plaintext[0], &len, ciphertext, ciphertext_len);
-    plaintext_len = len;
+    // Generate secp256k1 key pair
+    key_pair_obj = EC_KEY_new_by_curve_name(NID_secp256k1);
+    ret_error = EC_KEY_generate_key(key_pair_obj);
 
-    /* Finalise the decryption. Further plaintext bytes may be written at
-     * this stage.
-     */
-    EVP_OpenFinal(ctx, &plaintext[0] + len, &len);
-    plaintext_len += len;
+    // Get private key
+    priv_key = (BIGNUM*)EC_KEY_get0_private_key(key_pair_obj);
+    priv_key_char = BN_bn2hex(priv_key);
+ 
+    // Get public key
+    pub_key = (EC_POINT*)EC_KEY_get0_public_key(key_pair_obj);
+    secp256k1_group = EC_GROUP_new_by_curve_name(NID_secp256k1);
+    pub_key_char = EC_POINT_point2hex(secp256k1_group, pub_key, POINT_CONVERSION_UNCOMPRESSED, nullptr);
 
-    /* Clean up */
-    EVP_CIPHER_CTX_free(ctx);
-    plaintext.resize(plaintext_len);
-    return plaintext;
+    EC_GROUP_free(secp256k1_group);
+
+    printf("Private key: %s\n", priv_key_char);
+    printf("Public key : %s\n", pub_key_char);
+
+    //string hex_priv = priv_key_char;
+   // std::string ascii_priv = hexToASCII(hex_priv);
+
+    FILE* PrivKey;
+    PrivKey = fopen("private.pem", "w+");
+    PEM_write_ECPrivateKey(PrivKey,key_pair_obj, NULL, NULL, NULL, NULL, NULL);
+    fclose(PrivKey);
+
+    string hex_pub = pub_key_char;
+    std::string ascii_pub = hexToASCII(hex_pub);
+
+    FILE* PubKey;
+    PubKey = fopen("public.pem", "w+");
+    PEM_write_EC_PUBKEY(PubKey, key_pair_obj);
+    fclose(PubKey);
 }
 
-string Utils::GetHex(vector<unsigned char> v)
+int hex_value(unsigned char hex_digit)
 {
-    stringstream ss;
-    for (size_t i = 0; i < v.size(); ++i)
+    static const signed char hex_values[256] = {
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+         0,  1,  2,  3,  4,  5,  6,  7,  8,  9, -1, -1, -1, -1, -1, -1,
+        -1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    };
+    int value = hex_values[hex_digit];
+    if (value == -1) throw std::invalid_argument("invalid hex digit");
+    return value;
+}
+
+std::string Utils::hexToASCII(string &hex)
+{
+    const auto len = hex.length();
+    if (len & 1) throw std::invalid_argument("odd length");
+
+    std::string output;
+    output.reserve(len / 2);
+    for (auto it = hex.begin(); it != hex.end(); )
     {
-        char c1[3] = {};
-        sprintf(c1, "%02x", v[i]);
-        ss << c1;
+        int hi = hex_value(*it++);
+        int lo = hex_value(*it++);
+        output.push_back(hi << 4 | lo);
     }
-    return ss.str();
+    return output;
 }
 
-vector<unsigned char> Utils::GetBinary(string s)
+std::string Utils::ASCIItoHEX(string& ascii)
 {
-    vector<unsigned char> b;
+    static const char hex_digits[] = "0123456789ABCDEF";
 
-    for (size_t i = 0; i < s.size(); i = i + 2)
+    std::string output;
+    output.reserve(ascii.length() * 2);
+    for (unsigned char c : ascii)
     {
-        unsigned int c, c1;
-        char str[2] = { s.c_str()[i],  0 }; sscanf(str, "%02x", &c);
-        char str1[2] = { s.c_str()[i + 1],0 }; sscanf(str1, "%02x", &c1);
-
-        b.push_back((c << 4) + c1);
+        output.push_back(hex_digits[c >> 4]);
+        output.push_back(hex_digits[c & 15]);
     }
-    return b;
-}
-
-
-//save keys
-
-bool Utils::generate_key() {
-    int				ret = 0;
-    RSA* r = NULL;
-    BIGNUM* bne = NULL;
-    BIO* bp_public = NULL, * bp_private = NULL;
-
-    int				bits = 2048;
-    unsigned long	e = RSA_F4;
-
-    // 1. generate rsa key
-    bne = BN_new();
-    ret = BN_set_word(bne, e);
-    if (ret != 1) {
-        goto free_all;
-    }
-
-    r = RSA_new();
-    ret = RSA_generate_key_ex(r, bits, bne, NULL);
-    if (ret != 1) {
-        goto free_all;
-    }
-    // 2. save public key
-    bp_public = BIO_new_file("public.pem", "w+");
-    ret = PEM_write_bio_RSAPublicKey(bp_public, r);
-    if (ret != 1) {
-        goto free_all;
-    }
-
-    // 3. save private key
-    bp_private = BIO_new_file("private.pem", "w+");
-    ret = PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL);
-
-    // 4. free
-free_all:
-
-    BIO_free_all(bp_public);
-    BIO_free_all(bp_private);
-    RSA_free(r);
-    BN_free(bne);
-
-    return (ret == 1);
+    return output;
 }

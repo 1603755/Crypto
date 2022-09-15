@@ -24,7 +24,7 @@ Block::Block(uint32_t h, uint32_t nonc, uint256_t prev, uint256_t hashMerkle, ve
 
 void Block::mine(uint8_t diff) {
 	srand(time(NULL));
-	uint64_t nNonce = rand() % 0xFFFFFFFFFFFFFFFF;
+	uint64_t nNonce = rand() % 0xFFFFFFFF;
 	sha256 sha;
 	string signature = to_string(height) + to_string(nNonce) + sha256::toString(prevHash.bits) + sha256::toString(hashMerkleRoot.bits);
 	sha.update(signature);
