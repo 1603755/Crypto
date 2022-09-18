@@ -20,14 +20,14 @@ public:
 	uint256_t hash;
 	uint256_t prevHash;
 	uint256_t hashMerkleRoot;
-	time_t date;
+	uint32_t date;
 };
 
 
 class Block : public BlockHeader
 {
 public:
-	vector<Transaction> tx;
+	vector<Transaction> tx; 
 	Block();
 	Block(uint32_t h, uint32_t nonc, uint256_t prev, uint256_t hashMerkle, vector<Transaction> vtx, time_t time);
 	void mine(uint8_t diff);
@@ -36,4 +36,5 @@ public:
 	vector<Transaction> getTX() { return tx; }
 	//no serveix crec
 	bool operator ==(Block b) { return(height == b.height && nonce == b.nonce && sha256::toString(hash.bits) == sha256::toString(b.hash.bits) && sha256::toString(prevHash.bits) == sha256::toString(b.prevHash.bits) && sha256::toString(hashMerkleRoot.bits) == sha256::toString(b.hashMerkleRoot.bits)); }
+	void operator =(Block b) { height = b.height; nonce = b.nonce;  sha256::toString(hash.bits) = sha256::toString(b.hash.bits); sha256::toString(prevHash.bits) = sha256::toString(b.prevHash.bits); sha256::toString(hashMerkleRoot.bits) = sha256::toString(b.hashMerkleRoot.bits); tx = b.tx; }
 };

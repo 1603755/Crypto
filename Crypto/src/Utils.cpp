@@ -1,6 +1,7 @@
 //https://wiki.openssl.org/index.php/EVP_Asymmetric_Encryption_and_Decryption_of_an_Envelope
-#include "Utils.h"
-#include "base58.h"
+#include "../include/Utils.h"
+#include "../include/base58.h"
+
 using namespace std;
 using std::cout; using std::cin;
 using std::endl; using std::string;
@@ -47,7 +48,7 @@ string Utils::getAddressFromPublicKey(string PK) {
 std::string Utils::getPublicKey() {
     //Load our public key from .pem file
     EC_KEY* key_pair_obj = nullptr;
-    FILE* file = fopen("public.pem", "rt");
+    FILE* file = fopen(PUBLIC_KEY_PATH, "rt");
     PEM_read_EC_PUBKEY(file, &key_pair_obj, NULL, NULL);
 
     char* pub_key_char;
@@ -96,7 +97,7 @@ void Utils::Keys()
    // std::string ascii_priv = hexToASCII(hex_priv);
 
     FILE* PrivKey;
-    PrivKey = fopen("private.pem", "w+");
+    PrivKey = fopen(PRIVATE_KEY_PATH, "w");
     PEM_write_ECPrivateKey(PrivKey,key_pair_obj, NULL, NULL, NULL, NULL, NULL);
     fclose(PrivKey);
 
@@ -104,7 +105,7 @@ void Utils::Keys()
     std::string ascii_pub = hexToASCII(hex_pub);
 
     FILE* PubKey;
-    PubKey = fopen("public.pem", "w+");
+    PubKey = fopen(PUBLIC_KEY_PATH, "w");
     PEM_write_EC_PUBKEY(PubKey, key_pair_obj);
     fclose(PubKey);
 }
@@ -162,4 +163,9 @@ std::string Utils::ASCIItoHEX(string& ascii)
         output.push_back(hex_digits[c & 15]);
     }
     return output;
+}
+
+bool Utils::file_exists(const std::string& name) {
+    ifstream f(name.c_str());
+    return f.good();
 }

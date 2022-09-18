@@ -1,4 +1,4 @@
-#include "Block.h"
+#include "../include/Block.h"
 
 BlockHeader::BlockHeader()
 {
@@ -7,6 +7,14 @@ BlockHeader::BlockHeader()
 }
 
 Block::Block() {
+	uint256_t null_hash;
+	for (int i = 0; i < 32; i++) {
+		null_hash.bits[i] = 0;
+	}
+	hash = null_hash;
+	hashMerkleRoot = null_hash;
+	prevHash = null_hash;
+	date = NULL;
 	height = NULL;
 	nonce = NULL;
 	date = NULL;

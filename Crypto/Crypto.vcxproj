@@ -18,6 +18,36 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ConnectionManager\include\base.h" />
+    <ClInclude Include="ConnectionManager\include\Client.h" />
+    <ClInclude Include="ConnectionManager\include\ConnectionManager.h" />
+    <ClInclude Include="ConnectionManager\include\Server.h" />
+    <ClInclude Include="include\base58.h" />
+    <ClInclude Include="include\base64.h" />
+    <ClInclude Include="include\Block.h" />
+    <ClInclude Include="include\Coin.h" />
+    <ClInclude Include="include\ripemd160.h" />
+    <ClInclude Include="include\sha256.h" />
+    <ClInclude Include="include\Transaction.h" />
+    <ClInclude Include="include\Utils.h" />
+    <ClInclude Include="include\Wallet.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ConnectionManager\src\base.cpp" />
+    <ClCompile Include="ConnectionManager\src\Client.cpp" />
+    <ClCompile Include="ConnectionManager\src\ConnectionManager.cpp" />
+    <ClCompile Include="ConnectionManager\src\Server.cpp" />
+    <ClCompile Include="src\base58.cpp" />
+    <ClCompile Include="src\base64.cpp" />
+    <ClCompile Include="src\Block.cpp" />
+    <ClCompile Include="src\Coin.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\sha256.cpp" />
+    <ClCompile Include="src\Transaction.cpp" />
+    <ClCompile Include="src\Utils.cpp" />
+    <ClCompile Include="src\Wallet.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -137,27 +167,6 @@
       <AdditionalDependencies>C:\Users\34644\source\Libraries and Includes\OpenSSL-3.0\STATIC\x64\Release\lib\libcrypto.lib;C:\Users\34644\source\Libraries and Includes\OpenSSL-3.0\STATIC\x64\Release\lib\libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="base58.cpp" />
-    <ClCompile Include="base64.cpp" />
-    <ClCompile Include="Block.cpp" />
-    <ClCompile Include="Coin.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="sha256.cpp" />
-    <ClCompile Include="Transaction.cpp" />
-    <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="Wallet.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="base58.h" />
-    <ClInclude Include="base64.h" />
-    <ClInclude Include="Block.h" />
-    <ClInclude Include="Coin.h" />
-    <ClInclude Include="sha256.h" />
-    <ClInclude Include="Transaction.h" />
-    <ClInclude Include="Utils.h" />
-    <ClInclude Include="Wallet.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

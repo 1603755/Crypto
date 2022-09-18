@@ -1,4 +1,6 @@
-#include "Coin.h"
+#include "../include/Coin.h"
+
+
 
 Coin::Coin()
 {
@@ -139,4 +141,36 @@ void Coin::readjustDifficulty() {
 		DIFFICULTY++;
 	else if (ratio < 1)
 		DIFFICULTY--;
+}
+
+bool Coin::saveBlockChain() {
+
+	//Save missing blocks into local files
+	for (uint64_t i = 0; i < BlockChain.size(); i++) {
+		if (!Utils::file_exists(BLOCKCHAIN_DATA_PATH + to_string(i) + ".dat")) {
+			ofstream file;
+			file.open(BLOCKCHAIN_DATA_PATH + to_string(i) + ".dat"); //,ios::app) with append
+			file.write((char*)&BlockChain[i], sizeof(BlockChain[i]));
+			file.close();
+		}
+	}	
+	return true;
+}
+
+bool Coin::loadBlockChain() {
+	return true;
+}
+
+void Coin::readjustReward() {
+	
+}
+
+Block Coin::getBlock(uint64_t num) {
+	if (num > BlockChain.size() - 1) {
+		Block b;
+		return b;
+	}
+	else {
+		return BlockChain[num];
+	}
 }

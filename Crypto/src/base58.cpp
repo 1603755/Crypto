@@ -1,4 +1,4 @@
-#include "base58.h"
+#include "../include/base58.h"
 
 std::string base58::Base58Encode(const std::vector<uint8_t>& data, CodecMapping mapping)
 {

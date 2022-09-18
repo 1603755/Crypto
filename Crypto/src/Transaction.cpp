@@ -1,4 +1,4 @@
-#include "Transaction.h"
+#include "../include/Transaction.h"
  
 
 Transaction::Transaction(uint256_t From, uint256_t To, uint32_t quantity, uint32_t time)
@@ -19,16 +19,6 @@ Transaction::Transaction(uint256_t From, uint256_t To, uint32_t quantity, vector
 	Timestamp = time;
 }
 
-vector<uint8_t> Transaction::getData() {
-	//Return all data bytes
-	string base64_txFrom = base64_encode(sha256::toString(txFrom.bits), false);
-	string base64_txTo = base64_encode(sha256::toString(txTo.bits), false);
-	string str(signature.begin(), signature.end());
-	string bytesData = base64_txFrom + base64_txTo + to_string(amount) + to_string(Timestamp) + str;
-	vector<uint8_t> bytesTx(bytesData.begin(), bytesData.end());
-	return bytesTx;
-}
-
 bool Transaction::sign() {
 	//Sign data of transaction object
     string message = sha256::toString(txFrom.bits) + sha256::toString(txTo.bits) + to_string(amount) + to_string(Timestamp);
@@ -36,9 +26,9 @@ bool Transaction::sign() {
     const unsigned char* text_to_sign = reinterpret_cast<const unsigned char*>(c);
 
     EC_KEY* key_pair_obj = nullptr;
-	FILE* f = fopen("private.pem", "rt");
+	FILE* f = fopen(PRIVATE_KEY_PATH, "rt");
 	PEM_read_ECPrivateKey(f, &key_pair_obj, NULL, NULL);
-	
+	fclose(f);
 	EC_POINT* priv_key = (EC_POINT*)EC_KEY_get0_private_key(key_pair_obj);
 
 	uint32_t signature_len;
@@ -75,6 +65,5 @@ bool Transaction::sign() {
 	for (uint32_t i = 0; i < signature_len; i++) {
 		signature.push_back(sign[i]);
 	}
-
 	return true;
 }

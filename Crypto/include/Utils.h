@@ -25,22 +25,25 @@
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "advapi32.lib")
 
+#define PRIVATE_KEY_PATH "ec-keys/ec-private.pem"
+#define PUBLIC_KEY_PATH "ec-keys/ec-public.pem"
+#define BLOCKCHAIN_DATA_PATH "data/block"
+
 struct uint256_t {
 	std::uint8_t bits[32];
-	void operator= (uint8_t* num) { for (uint8_t i = 0; i < sizeof(bits); i++) { bits[i] = num[i]; } };
+	inline void operator= (uint8_t* num) { for (uint8_t i = 0; i < sizeof(bits); i++) { bits[i] = num[i]; } };
+	inline bool operator== (uint8_t* num) { for (uint8_t i = 0; i < sizeof(bits); i++) { if (bits[i] != num[i]) { return false; } } return true; };
 };
 
 
 class Utils
 { 
 public:
-	static std::vector<unsigned char> envelope_seal(EVP_PKEY** pub_key, unsigned char* plaintext, int plaintext_len, unsigned char** encrypted_key, int* encrypted_key_len, unsigned char* iv);
-	static std::vector<unsigned char> envelope_open(EVP_PKEY* priv_key, unsigned char* ciphertext, int ciphertext_len, unsigned char* encrypted_key, int encrypted_key_len, unsigned char* iv);
-	static std::string GetHex(std::vector<unsigned char> v);
 	static std::vector<unsigned char> GetBinary(std::string s);
 	static std::string getAddressFromPublicKey(std::string PK);
 	static std::string getPublicKey();
 	static void Keys();
 	static std::string hexToASCII(std::string &hex);
 	static std::string ASCIItoHEX(std::string& ascii);
+	static bool file_exists(const std::string& name);
 };

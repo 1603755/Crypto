@@ -19,60 +19,93 @@
     <Filter Include="Archivos de encabezado\Utils">
       <UniqueIdentifier>{4681d72d-51be-46d8-b4f2-b8a7023f8013}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de recursos\ConnectionManager">
+      <UniqueIdentifier>{ee22f342-5622-498f-9ba6-5318d7352953}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\ConnectionManager">
+      <UniqueIdentifier>{dd67662f-f74f-457c-ad12-1eaf50374c70}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Block.cpp">
-      <Filter>Archivos de recursos</Filter>
-    </ClCompile>
-    <ClCompile Include="Coin.cpp">
-      <Filter>Archivos de recursos</Filter>
-    </ClCompile>
-    <ClCompile Include="Transaction.cpp">
-      <Filter>Archivos de recursos</Filter>
-    </ClCompile>
-    <ClCompile Include="base64.cpp">
-      <Filter>Archivos de recursos\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="sha256.cpp">
-      <Filter>Archivos de recursos\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClInclude Include="include\base58.h">
+      <Filter>Archivos de encabezado\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\base64.h">
+      <Filter>Archivos de encabezado\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ripemd160.h">
+      <Filter>Archivos de encabezado\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sha256.h">
+      <Filter>Archivos de encabezado\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Utils.h">
+      <Filter>Archivos de encabezado\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Block.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Wallet.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Coin.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Transaction.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectionManager\include\Client.h">
+      <Filter>Archivos de encabezado\ConnectionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectionManager\include\ConnectionManager.h">
+      <Filter>Archivos de encabezado\ConnectionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectionManager\include\Server.h">
+      <Filter>Archivos de encabezado\ConnectionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectionManager\include\base.h">
+      <Filter>Archivos de encabezado\ConnectionManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
-    <ClCompile Include="Utils.cpp">
-      <Filter>Archivos de recursos\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Wallet.cpp">
+    <ClCompile Include="src\Block.cpp">
       <Filter>Archivos de recursos</Filter>
     </ClCompile>
-    <ClCompile Include="base58.cpp">
+    <ClCompile Include="src\Coin.cpp">
+      <Filter>Archivos de recursos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Transaction.cpp">
+      <Filter>Archivos de recursos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Wallet.cpp">
+      <Filter>Archivos de recursos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\base64.cpp">
       <Filter>Archivos de recursos\Utils</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Block.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
-    <ClInclude Include="Transaction.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
-    <ClInclude Include="Coin.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
-    <ClInclude Include="sha256.h">
-      <Filter>Archivos de encabezado\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="base64.h">
-      <Filter>Archivos de encabezado\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Wallet.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.h">
-      <Filter>Archivos de encabezado\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="base58.h">
-      <Filter>Archivos de encabezado\Utils</Filter>
-    </ClInclude>
+    <ClCompile Include="src\sha256.cpp">
+      <Filter>Archivos de recursos\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils.cpp">
+      <Filter>Archivos de recursos\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ConnectionManager\src\Client.cpp">
+      <Filter>Archivos de recursos\ConnectionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="ConnectionManager\src\ConnectionManager.cpp">
+      <Filter>Archivos de recursos\ConnectionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="ConnectionManager\src\base.cpp">
+      <Filter>Archivos de recursos\ConnectionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="ConnectionManager\src\Server.cpp">
+      <Filter>Archivos de recursos\ConnectionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="src\base58.cpp">
+      <Filter>Archivos de recursos\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
