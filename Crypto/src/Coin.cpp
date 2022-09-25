@@ -12,7 +12,7 @@ Coin::Coin()
 
 //OK. DONE
 bool Coin::addCandidateBlock(Block block) {
-	if (!block.verifyHash(sha256::toString(block.hash.bits), DIFFICULTY))
+	if (!block.verifyHash(Utils::toString(block.hash.bits), DIFFICULTY))
 		return false;
 	if (BlockChain.size() != 0 && block.getHeight() < getLastBlockOnChain().getHeight())
 		return false;
@@ -20,7 +20,7 @@ bool Coin::addCandidateBlock(Block block) {
 	queue<Block> copy_candidates = candidates;
 	for (int i = 0; i < candidates.size(); i++) {
 		Block front = copy_candidates.front();
-		if (sha256::toString(front.getHash().bits) == sha256::toString(block.getHash().bits))
+		if (Utils::toString(front.getHash().bits) == Utils::toString(block.getHash().bits))
 			return true;
 		copy_candidates.pop();
 	}
@@ -51,19 +51,19 @@ bool Coin::addCandidateBlock(Block block) {
 bool Coin::addBlockToChain(Block block) {
 	Block last = getLastBlockOnChain();
 	if (BlockChain.size() == 0) {
-		if (sha256::toString(block.getHash().bits)== "" and sha256::toString(block.getPrevHash().bits) != "" and block.getHeight() != NULL and sha256::toString(block.getHashMerkleRoot().bits) == "")
+		if (Utils::toString(block.getHash().bits)== "" and Utils::toString(block.getPrevHash().bits) != "" and block.getHeight() != NULL and Utils::toString(block.getHashMerkleRoot().bits) == "")
 			return false;
 	}
 	else
-		if (sha256::toString(block.getPrevHash().bits) == "")
+		if (Utils::toString(block.getPrevHash().bits) == "")
 			return false;
-	if (sha256::toString(last.getHash().bits) != sha256::toString(block.getPrevHash().bits))
+	if (Utils::toString(last.getHash().bits) != Utils::toString(block.getPrevHash().bits))
 		return false;
 	if (last.getHeight() + 1 != block.getHeight())
 		return false;
-	if (sha256::toString(block.getHashMerkleRoot().bits) == "")
+	if (Utils::toString(block.getHashMerkleRoot().bits) == "")
 		return false;
-	if (!block.verifyHash(sha256::toString(block.getHashMerkleRoot().bits), DIFFICULTY));
+	if (!block.verifyHash(Utils::toString(block.getHashMerkleRoot().bits), DIFFICULTY));
 	return false;
 	//Faltaria validar la comision del bloque y luego las transacciones
 	BlockChain.push_back(block);
@@ -79,16 +79,16 @@ void Coin::saveBlockchainAsJSON() {
 	for (int i = 0; i < BlockChain.size(); i++) {
 		parseBC += "{";
 		parseBC += "\"Height\":" + BlockChain[i].getHeight() + ',';
-		parseBC += "\"Hash\":" + sha256::toString(BlockChain[i].getHash().bits) + ',';
+		parseBC += "\"Hash\":" + Utils::toString(BlockChain[i].getHash().bits) + ',';
 		parseBC += "\"Nonce\":" + BlockChain[i].getNonce() + ',';
-		parseBC += "\"Hash Merkle Root\":" + sha256::toString(BlockChain[i].getHashMerkleRoot().bits) + ',';
-		parseBC += "\"Previous Hash\":" + sha256::toString(BlockChain[i].getPrevHash().bits) + ',';
+		parseBC += "\"Hash Merkle Root\":" + Utils::toString(BlockChain[i].getHashMerkleRoot().bits) + ',';
+		parseBC += "\"Previous Hash\":" + Utils::toString(BlockChain[i].getPrevHash().bits) + ',';
 		parseBC += "\"Date\":" + BlockChain[i].getDate() + ',';
 		parseBC += "\"Transactions\":";
 		for (int j = 0; j < BlockChain[i].getTX().size(); j++) {
 			parseBC += "{";
-			parseBC += "\"From\":" + sha256::toString(BlockChain[i].getTX()[j].getTxFrom().bits) + ',';
-			parseBC += "\"To\":" + sha256::toString(BlockChain[i].getTX()[j].getTxTo().bits) + ',';
+			parseBC += "\"From\":" + Utils::toString(BlockChain[i].getTX()[j].getTxFrom().bits) + ',';
+			parseBC += "\"To\":" + Utils::toString(BlockChain[i].getTX()[j].getTxTo().bits) + ',';
 			parseBC += "\"Amount\":" + BlockChain[i].getTX()[j].getAmount() + ',';
 			parseBC += "\"Date\":" + BlockChain[i].getTX()[j].getTime();
 			if (j != BlockChain[i].getTX().size() - 1)
@@ -173,4 +173,19 @@ Block Coin::getBlock(uint64_t num) {
 	else {
 		return BlockChain[num];
 	}
+}
+
+float Coin::getBalance(uint256_t PubKey) {
+	uint32_t amount;
+	for (uint64_t i = 0; i < BlockChain.size(); i++) {
+		for (uint32_t j = 0; j < BlockChain[i].getTX().size(); j++) {
+			if (PubKey == BlockChain[i].getTX()[j].getTxFrom()) {
+				amount -= BlockChain[i].getTX()[j].getAmount();
+			}
+			if (PubKey == BlockChain[i].getTX()[j].getTxTo()) {
+				amount += BlockChain[i].getTX()[j].getAmount();
+			}
+		}
+	}
+	return amount;
 }

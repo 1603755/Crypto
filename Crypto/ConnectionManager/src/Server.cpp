@@ -1,6 +1,10 @@
 #include "../include/Server.h"
-Server::Server()
-{
+Server::Server(Coin &coin)
+{   
+    c = &coin;
+}
+
+DWORD Server::InitializeServerThread() {
     // create socket
     int listen_sock = get_listen_socket();
 
@@ -108,4 +112,119 @@ void Server::del_client(vector<pollfd>::iterator it)
     poll_sets.erase(it);
     closesocket(it->fd);
     printf("now_client_num: %u\n", (unsigned int)poll_sets.size() - 1);
+}
+
+vector<uint8_t> Server::serializate_block(Block b) {
+    /*
+    <--ORDER OF DATA-->
+    1 - Num of bytes on Block (4 bytes)
+    2 - Hash (32 bytes)
+    3 - Previous Hash (32 bytes)
+    4 - Hash Merkle Root (32 bytes)
+    5 - Height (4 bytes)
+    6 - Nonce (4 bytes)
+    7 - Timestamp (4 bytes)
+    8 - Num of transactions (2 bytes)
+    9 - Transactions array (variable)
+    */
+
+    //CREATE THE ARRAY TO PUT THE SERIALIZATED DATA OF THE OBJECT TRANSACTION
+    vector<uint8_t> serializated_block;
+    
+    //1 - LOAD THE NUMBER OF BYTES
+    for (uint8_t i = 0; i < UINT32_LENGTH; i++) {
+        serializated_block.push_back(uint8_t(b.getNumBytes() >> (UINT32_LENGTH - i - 1)));
+    }
+    //2 - LOAD THE HASH 
+    for (uint8_t i = 0; i < UINT256_LENGTH; i++) {
+        serializated_block.push_back(b.getHash().bits[i]);
+    }
+    // 3 - LOAD THE PREVIOUS HASH 
+    for (uint8_t i = 0; i < UINT256_LENGTH; i++) {
+        serializated_block.push_back(b.getPrevHash().bits[i]);
+    }
+    //4 - LOAD THE HASH MERKLE ROOT
+    for (uint8_t i = 0; i < UINT256_LENGTH; i++) {
+        serializated_block.push_back(b.getHashMerkleRoot().bits[i]);
+    }
+    //5 - LOAD THE HEIGHT
+    for (uint8_t i = 0; i < UINT32_LENGTH; i++) {
+        serializated_block.push_back(uint8_t(b.getHeight() >> (UINT32_LENGTH - i - 1)));
+    }
+    //6 - LOAD THE NONCE
+    for (uint8_t i = 0; i < UINT32_LENGTH; i++) {
+        serializated_block.push_back(uint8_t(b.getNonce() >> (UINT32_LENGTH - i - 1)));
+    }
+    //7 - LOAD THE DATE
+    for (uint8_t i = 0; i < UINT32_LENGTH; i++) {
+        serializated_block.push_back(uint8_t(b.getDate() >> (UINT32_LENGTH - i - 1)));
+    }
+    //8 - LOAD THE NUMBER OF TRANSACTIONS
+    for (uint8_t i = 0; i < UINT16_LENGTH; i++) {
+        serializated_block.push_back(uint8_t(b.getNumTX() >> (UINT16_LENGTH - i - 1)));
+    }
+    //9 - FOR EACH TRANSATION WE SERIALIZATE EACH ONE OF THEM AND THEN WE PUT THEM TO THE SERIALIZATED BLOCK
+    vector<Transaction> transactions = b.getTX();
+    for (uint16_t i = 0; i < b.getNumTX(); i++) {
+        vector<uint8_t> data_transaction = serializate_transaction(transactions[i]);
+        for (uint32_t j = 0; j < data_transaction.size(); j++) {
+            serializated_block.push_back(data_transaction[j]);
+        }
+    }
+
+    //RETURN THE SERIALIZATED DATA OF THE BLOCK
+    return serializated_block;
+}
+
+vector<uint8_t> Server::serializate_transaction(Transaction t)
+ {
+    /*
+    <--ORDER OF DATA-->
+    1 - Num of bytes on Transaction (4 bytes)
+    2 - Hash From (32 bytes)
+    3 - Hash To (32 bytes)
+    4 - Amount (4 bytes)
+    5 - Timestamp (4 bytes)
+    6 - Signature Length (4 bytes)
+    7 - Signature (variable)
+    */
+
+    //CREATE THE ARRAY TO PUT THE SERIALIZATED DATA OF THE OBJECT TRANSACTION
+    vector<uint8_t> serializated_transaction;
+
+    //1 - LOAD THE NUMBER OF BYTES
+    for (uint8_t i = 0; i < UINT32_LENGTH; i++) {
+        serializated_transaction.push_back(uint8_t(t.getNumBytes() >> (UINT32_LENGTH - i - 1)));
+    }
+    //2 - LOAD THE HASH FROM
+    for (uint8_t i = 0; i < UINT256_LENGTH; i++) {
+        serializated_transaction.push_back(t.getTxFrom().bits[i]);
+    }
+    //3 - LOAD THE HASH TO
+    for (uint8_t i = 0; i < UINT256_LENGTH; i++) {
+        serializated_transaction.push_back(t.getTxTo().bits[i]);
+    }
+    //4 - LOAD THE AMOUNT OF TX
+    for (uint8_t i = 0; i < UINT32_LENGTH; i++) {
+        serializated_transaction.push_back(uint8_t(t.getAmount() >> (UINT32_LENGTH - i - 1)));
+    }
+    //5 - LOAD THE TIME OF THE TRANSACTION
+    for (uint8_t i = 0; i < UINT32_LENGTH; i++) {
+        serializated_transaction.push_back(uint8_t(t.getTime() >> (UINT32_LENGTH - i - 1)));
+    }
+    //6 - LOAD THE LENGTH OF THE SIGNATURE
+    for (uint8_t i = 0; i < t.getSignatureLength(); i++) {
+        serializated_transaction.push_back(uint8_t(t.getSignatureLength() >> (UINT32_LENGTH - i - 1)));
+    }
+    //7 - LOAD THE SIGNATURE
+    for (uint32_t i = 0; i < t.getSignatureLength(); i++) {
+        serializated_transaction.push_back(t.getSignature()[i]);
+    }
+
+    //RETURN OUR OBJECT SERIALIZATED
+    return serializated_transaction;
+}
+
+SOCKADDR_IN Server::deserializate_socket_address() {
+    //FALTA
 }

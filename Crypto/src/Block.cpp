@@ -19,31 +19,33 @@ Block::Block() {
 	nonce = NULL;
 	date = NULL;
 }
-Block::Block(uint32_t h, uint32_t nonc, uint256_t prev, uint256_t hashMerkle, vector<Transaction> vtx, time_t time)
+Block::Block(uint32_t Bytes, uint256_t Hash, uint256_t prev, uint256_t hashMerkle, uint32_t h, uint32_t Nonce, uint32_t time, uint16_t nTransactions, vector<Transaction> vtx)
 {
-	height = h;
-	nonce = nonc;
+	nbytes = Bytes;
+	hash = Hash;
 	prevHash = prev;
 	hashMerkleRoot = hashMerkle;
-	tx = vtx;
+	height = h;
+	nonce = Nonce;
 	date = time;
+	num_tx = nTransactions;
+	tx = vtx;
+	
 
 }
 
 void Block::mine(uint8_t diff) {
 	srand(time(NULL));
-	uint64_t nNonce = rand() % 0xFFFFFFFF;
-	sha256 sha;
-	string signature = to_string(height) + to_string(nNonce) + sha256::toString(prevHash.bits) + sha256::toString(hashMerkleRoot.bits);
-	sha.update(signature);
+	uint32_t nNonce = rand() % 0xFFFFFFFF;
+	string signature = to_string(height) + to_string(nNonce) + Utils::toString(prevHash.bits) + Utils::toString(hashMerkleRoot.bits);
 	uint256_t h;
-	h = sha.digest();
-	while (!verifyHash(sha256::toString(h.bits), diff)) {
+	SHA256((unsigned char*)&signature, signature.length(), h.bits);
+	
+	while (!verifyHash(Utils::toString(h.bits), diff)) {
 		//numero aleatorio entre 0 i 2^32 - 1
 		nNonce = rand() % 0xFFFFFFFF;
-		signature = to_string(height) + to_string(nNonce) + sha256::toString(prevHash.bits) + sha256::toString(hashMerkleRoot.bits);
-		sha.update(signature);
-		h = sha.digest();
+		signature = to_string(height) + to_string(nNonce) + Utils::toString(prevHash.bits) + Utils::toString(hashMerkleRoot.bits);
+		SHA256((unsigned char*)&signature, signature.length(), h.bits);
 	}
 	date = time(NULL);
 	nonce = nNonce;
@@ -64,11 +66,10 @@ bool Block::verifyHash(string hash, uint8_t diff) {
 		}
 	}
 	if (count == diff) {
-		string signature = to_string(height) + to_string(nonce) + sha256::toString(prevHash.bits) + sha256::toString(hashMerkleRoot.bits);
-		sha256 sha;
-		sha.update(signature);
-		string h = sha256::toString(sha.digest());
-		if (hash == h)
+		uint256_t h;
+		string signature = to_string(height) + to_string(nonce) + Utils::toString(prevHash.bits) + Utils::toString(hashMerkleRoot.bits);
+		SHA256((unsigned char*)&signature, signature.length(), h.bits);
+		if ((uint8_t*)&hash == h.bits)
 			verify = true;
 	}
 	return verify;

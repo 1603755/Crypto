@@ -169,3 +169,16 @@ bool Utils::file_exists(const std::string& name) {
     ifstream f(name.c_str());
     return f.good();
 }
+
+std::string Utils::toString(const uint8_t* digest) {
+    std::stringstream s;
+    s << std::setfill('0') << std::hex;
+
+    for (uint8_t i = 0; i < 32; i++) {
+        s << std::setw(2) << (unsigned int)digest[i];
+    }
+
+    return s.str();
+}
+
+

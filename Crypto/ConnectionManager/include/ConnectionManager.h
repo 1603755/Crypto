@@ -3,14 +3,13 @@
 #include "../../include/Coin.h"
 #include "../include/Client.h"
 #include "../include/Server.h"
-
+#include "../../include/Thread.h"
 class ConnectionManager {
 public:
-	ConnectionManager(Coin c);
-	void ServerAccept();
+	ConnectionManager();
+
 private:
 	Coin coin;
-	vector<IN_ADDR> peers;
 	bool Running = true;
 	bool Sync = false;
 	uint32_t peer_id;

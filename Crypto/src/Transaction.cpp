@@ -1,30 +1,11 @@
 #include "../include/Transaction.h"
  
 
-Transaction::Transaction(uint256_t From, uint256_t To, uint32_t quantity, uint32_t time)
-{
-	//Initialize default transactin and do sign
-	Timestamp = time;
-	txFrom = From;
-	txTo = To;
-	amount = quantity;
-	sign();
-}
-Transaction::Transaction(uint256_t From, uint256_t To, uint32_t quantity, vector<uint8_t> sign, uint32_t time)
-{
-	txFrom = From;
-	txTo = To;
-	amount = quantity;
-	signature = sign;
-	Timestamp = time;
-}
+bool CTransaction::sign() {
+	vector<const unsigned char> to_sign_data;
+	serializeTransaction(this, to_sign_data);
 
-bool Transaction::sign() {
-	//Sign data of transaction object
-    string message = sha256::toString(txFrom.bits) + sha256::toString(txTo.bits) + to_string(amount) + to_string(Timestamp);
-    const char* c = const_cast<char*>(message.c_str());
-    const unsigned char* text_to_sign = reinterpret_cast<const unsigned char*>(c);
-
+	
     EC_KEY* key_pair_obj = nullptr;
 	FILE* f = fopen(PRIVATE_KEY_PATH, "rt");
 	PEM_read_ECPrivateKey(f, &key_pair_obj, NULL, NULL);
@@ -41,7 +22,7 @@ bool Transaction::sign() {
 	sign = (uint8_t*)OPENSSL_malloc(signature_len);
 
 	//Generate the hash to sign
-	digest = SHA256((const unsigned char*)text_to_sign, message.length(), buffer_digest);
+	digest = SHA256((const unsigned char *)&to_sign_data, to_sign_data.size(), buffer_digest);
 	ret_error = ECDSA_sign(0, (const uint8_t*)digest, SHA256_DIGEST_LENGTH, sign, &signature_len, key_pair_obj);
 
 	printf("Message SHA256: "); for (uint32_t i = 0; i < SHA256_DIGEST_LENGTH; i++) printf("%02x", digest[i]); printf("\n");
@@ -67,3 +48,14 @@ bool Transaction::sign() {
 	}
 	return true;
 }
+
+uint256_t CTransaction::ComputeHash() const
+{
+	vector<uint8_t> serializated_data;
+	serializeTransaction(*this, serializated_data);
+	uint256_t transaction_hash;
+	SHA256((uint8_t *)&serializated_data, serializated_data.size(), transaction_hash.bits);
+	return transaction_hash;
+}
+
+

@@ -1,29 +1,18 @@
-#pragma once
 #include <stdio.h>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <iostream>
-#define _GNU_SOURCE
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../include/Utils.h"
 
 class Wallet
 {
 public:
 	Wallet();
 	~Wallet();
-	void genKeyPair();
 
 private:
-
-	unsigned char* walletPublicKey;
+	std::string PublicKey;
 };
-
-Wallet::Wallet()
-{
-}
-
-Wallet::~Wallet()
-{
-}

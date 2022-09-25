@@ -25,18 +25,18 @@
     <Filter Include="Archivos de encabezado\ConnectionManager">
       <UniqueIdentifier>{dd67662f-f74f-457c-ad12-1eaf50374c70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de encabezado\UI">
+      <UniqueIdentifier>{5df050d0-67e1-4c73-bb47-440e41c20b5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\UI">
+      <UniqueIdentifier>{8eb81775-673b-437a-8851-6ac78e6a3f2e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\base58.h">
       <Filter>Archivos de encabezado\Utils</Filter>
     </ClInclude>
     <ClInclude Include="include\base64.h">
-      <Filter>Archivos de encabezado\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ripemd160.h">
-      <Filter>Archivos de encabezado\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="include\sha256.h">
       <Filter>Archivos de encabezado\Utils</Filter>
     </ClInclude>
     <ClInclude Include="include\Utils.h">
@@ -66,6 +66,12 @@
     <ClInclude Include="ConnectionManager\include\base.h">
       <Filter>Archivos de encabezado\ConnectionManager</Filter>
     </ClInclude>
+    <ClInclude Include="include\Thread.h">
+      <Filter>Archivos de encabezado\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\include\UInterface.h">
+      <Filter>Archivos de encabezado\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -86,9 +92,6 @@
     <ClCompile Include="src\base64.cpp">
       <Filter>Archivos de recursos\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="src\sha256.cpp">
-      <Filter>Archivos de recursos\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="src\Utils.cpp">
       <Filter>Archivos de recursos\Utils</Filter>
     </ClCompile>
@@ -106,6 +109,9 @@
     </ClCompile>
     <ClCompile Include="src\base58.cpp">
       <Filter>Archivos de recursos\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\src\UInterface.cpp">
+      <Filter>Archivos de recursos\UI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
